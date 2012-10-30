@@ -1,0 +1,17 @@
+To install:
+
+1) Check you have gpg, md5sum, sha1sum and shred installed and that you
+   have created a key (gnupg and coreutils packages under GNU/Debian)
+2) Make sure the supplied scripts are executable (chmod u+x gpg*)
+
+When any of the scripts is first run, it will generate an rc
+file in your home directory called .gpgutils.  This can be customised
+as required.  Additionally, the placing of a .gpgutils file in any
+directory will override this when the scripts are run from the given
+directory.
+
+The latest version of gpgutils can always be found at
+<http://www.nth-dimension.org.uk/>.
+
+
+

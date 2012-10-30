@@ -1,0 +1,20 @@
+0.3 - 0.4
+
+* Fixed minor bug
+
+0.2 - 0.3
+
+* Fixed minor bug of output from gpgverifyfiles
+* Fixed minor bug to the scripts regarding quoting
+* Added file permission checks on .gpgutils files
+
+0.1 - 0.2
+
+* gpgsignfiles now hashes with both MD5 and SHA1
+* gpgverifyfiles now checks hashes with both MD5 and SHA1
+* Now selects the first private key as the default user ID
+  when run unconfigured
+
+0.0 - 0.1
+
+* Initial PoC

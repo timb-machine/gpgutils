@@ -1,0 +1,102 @@
+#!/bin/sh
+# $Header: /var/lib/cvsd/var/lib/cvsd/gpgutils/src/gpgsignfiles,v 1.1.1.1 2012-10-30 16:44:00 timb Exp $
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+# (c) Tim Brown, 2007
+# <mailto:timb@nth-dimension.org.uk>
+# <http://www.nth-dimension.org.uk/> / <http://www.machine.org.uk/>
+
+usage() {
+	printf "usage: $0 [--signdirectoryname <signdirectoryname>] [--signedfilename <signedfilename>]\n"
+	exit 0
+}
+
+checkpermissions() {
+	filename="$1"
+	case "`ls -l \"$filename\"`" in
+		"?????w????*")
+			printf "E: $filename has bad permissions\n"
+			exit 0
+			;;
+		"?????????w")
+			printf "E: $filename has bad permissions\n"
+			exit 0
+			;;
+	esac
+}
+
+if [ -f .gpgutils ]
+then
+	checkpermissions .gpgutils
+	source .gpgutils
+else
+	if [ ! -f "$HOME/.gpgutils" ]
+	then
+		gnupguserid="`gpg --list-secret-keys | grep uid | sed \"s/.*<\(.*@.*\)>.*/\1/g\" | head -1`"
+		echo "GPGUTILS_HOMEDIR=\"\$HOME/.gnupg\"" > "$HOME/.gpgutils"
+		echo "GPGUTILS_USERID=\"$gnupguserid\"" >> "$HOME/.gpgutils"
+		echo "GPGUTILS_BINPATH=\"/bin:/usr/bin\"" >> "$HOME/.gpgutils"
+		chmod g=,o= "$HOME/.gpgutils"
+	fi
+	checkpermissions "$HOME/.gpgutils"
+	source "$HOME/.gpgutils"
+fi
+gnupgflags=""
+if [ "$GPGUTILS_HOMEDIR" != "" ]
+then
+	gnupgflags="$gnupgflags --homedir $GPGUTILS_HOMEDIR"
+fi
+if [ "$GPGUTILS_BINPATH" != "" ]
+then
+	PATH="$GPGUTILS_BINPATH"
+fi
+if [ "$GPGUTILS_USERID" != "" ]
+then
+	gnupgflags="$gnupgflags --local-user $GPGUTILS_USERID"
+fi
+
+signdirectoryname="."
+signedfilename=""
+while [ "$1" != "" ]
+do
+	case "$1" in
+		"--help")
+			usage
+			;;
+		"--signdirectoryname")
+			shift
+			signdirectoryname="$1"
+			;;
+		"--signedfilename")
+			shift
+			gnupgflags="$gnupgflags --output $1"
+			;;
+	esac
+	shift
+done
+if [ ! -d "$signdirectoryname" ]
+then
+	usage
+fi
+
+for filename in `find "$signdirectoryname" -type f | sed "s/^.\///g"`
+do
+	printf "MD5  "
+	md5sum "$filename"
+	printf "SHA1  "
+	sha1sum "$filename"
+done | gpg $gnupgflags --clearsign 2> /dev/null
+exit 1
